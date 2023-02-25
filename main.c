@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include "include/ascii_numbers.h"
 
 #ifdef _WIN32
 #define CLEAR "cls"
+#include <windows.h>
 #else
 #define CLEAR "clear"
+#include <unistd.h>
 #endif
 
 char *get_time(char *raw_time, size_t len) {
@@ -52,7 +53,11 @@ int main (void) {
         }
         //flush, because buffered and sleep
         fflush(stdout);
+#ifdef _WIN32
+        Sleep(1000)
+#else
         sleep(1);
+#endif
         system(CLEAR);
     }
     return 0;
