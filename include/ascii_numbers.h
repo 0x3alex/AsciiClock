@@ -120,10 +120,10 @@ const ascii_num ascii_nums[ASCII_NUMS_COUNT] = {
                 .ascii = {
                         { "    "},
                         { "    "},
-                        { " ( )"},
+                        { " (*)"},
                         { "    "},
                         { "    "},
-                        { " ( )"}
+                        { " (*)"}
                 }
         }
 };
