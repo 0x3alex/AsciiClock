@@ -53,6 +53,13 @@ void stopWatchToString(char *str,stopWatch *watch) {
 }
 
 int main (int argv, char** argc) {
+    if(argv == 2 && strncmp(argc[1],"h",strlen(argc[1])) == 0) {
+        printf("Syntax: Asciiclock <mode> <duration>\n");
+        printf("Modes:\nNone - Clock\n1 - Stopwatch\n");
+        printf("When choosing mode 1 the second paramter <duration> can be used to set a limit\n");
+        printf("Example usage for the stopwatch: Asciiclock 1 10 - This will display a stopwatch, which is counting to 10\n");
+        return 0;
+    }
     int mode = argv <= 1 ? 0 : 1;
     long limit = 1, iter = 1;
     char *overflow;
