@@ -1,6 +1,4 @@
-#ifndef ASCIICLOCK_ASCII_NUMBERS_H
-#define ASCIICLOCK_ASCII_NUMBERS_H
-
+#pragma once
 #define ASCII_NUMS_COUNT 11
 typedef struct {
     char number;
@@ -127,6 +125,3 @@ const ascii_num ascii_nums[ASCII_NUMS_COUNT] = {
                 }
         }
 };
-
-
-#endif //ASCIICLOCK_ASCII_NUMBERS_H

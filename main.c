@@ -12,6 +12,12 @@
 #include <unistd.h>
 #endif
 
+typedef struct s_stopWatch {
+    int h;
+    int m;
+    int s;
+} stopWatch;
+
 char *get_time(char *raw_time, size_t len) {
     char *t_str;
     t_str = strtok(raw_time, " ");
@@ -21,9 +27,38 @@ char *get_time(char *raw_time, size_t len) {
             return t_str;
         }
     }
-
+    return NULL;
 }
-int main (void) {
+
+void updateStopWatch(stopWatch *watch) {
+    watch->s++;
+    if(watch->s >= 60) {
+        watch->s -= 60;
+        watch->m++;
+    }
+    if(watch->m >= 60) {
+        watch->m -= 60;
+        watch->h++;
+    }
+}
+
+void stopWatchToString(char *str,stopWatch *watch) {
+    char h[3];
+    char m[3];
+    char s[3];
+    sprintf(h,watch->h < 10 ?"0%d" : "%d",watch->h);
+    sprintf(m,watch->m < 10 ?"0%d" : "%d",watch->m);
+    sprintf(s,watch->s < 10 ?"0%d" : "%d",watch->s);
+    sprintf(str,"%s:%s:%s",h,m,s);
+}
+
+int main (int argv, char** argc) {
+    int mode = argv <= 1 ? 0 : 1;
+    stopWatch watch = {
+            .h = 0,
+            .m = 0,
+            .s = 0
+    };
     time_t rawtime;
     struct tm * timeinfo;
     system(CLEAR);
@@ -32,7 +67,17 @@ int main (void) {
         int needed_ascii_nums[8];
         time ( &rawtime );
         timeinfo = localtime ( &rawtime );
-        char *time = get_time(asctime(timeinfo), strlen(asctime(timeinfo)));
+        char *time = argv <= 1 ? "" : calloc(9,sizeof(char));
+        switch(mode) {
+            case 0:
+                time = get_time(asctime(timeinfo), strlen(asctime(timeinfo)));
+
+                break;
+            case 1:
+                updateStopWatch(&watch);
+                stopWatchToString(time,&watch);
+                break;
+        }
 
         //get the indices of the ascii numbers
         while (*time) {
