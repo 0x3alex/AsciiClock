@@ -18,7 +18,7 @@ typedef struct s_stopWatch {
     int s;
 } stopWatch;
 
-char *get_time(char *raw_time, size_t len) {
+char *get_time(char *raw_time) {
     char *t_str;
     t_str = strtok(raw_time, " ");
     while (*t_str) {
@@ -54,6 +54,12 @@ void stopWatchToString(char *str,stopWatch *watch) {
 
 int main (int argv, char** argc) {
     int mode = argv <= 1 ? 0 : 1;
+    long limit = 1, iter = 1;
+    char *overflow;
+    if(argv >= 3) {
+        limit = strtol(argc[2],&overflow,10);
+    }
+    //int limit = argv == 3 ? atoi(argc[2]) : 0;
     stopWatch watch = {
             .h = 0,
             .m = 0,
@@ -62,21 +68,17 @@ int main (int argv, char** argc) {
     time_t rawtime;
     struct tm * timeinfo;
     system(CLEAR);
-    for(;;) {
+    while(iter <= limit) {
         int idx = 0;
         int needed_ascii_nums[8];
         time ( &rawtime );
         timeinfo = localtime ( &rawtime );
         char *time = argv <= 1 ? "" : calloc(9,sizeof(char));
-        switch(mode) {
-            case 0:
-                time = get_time(asctime(timeinfo), strlen(asctime(timeinfo)));
-
-                break;
-            case 1:
-                updateStopWatch(&watch);
-                stopWatchToString(time,&watch);
-                break;
+        if(mode == 1) {
+            updateStopWatch(&watch);
+            stopWatchToString(time,&watch);
+        }else{
+            time = get_time(asctime(timeinfo));
         }
 
         //get the indices of the ascii numbers
@@ -95,6 +97,9 @@ int main (int argv, char** argc) {
                 printf("%s",ascii_nums[needed_ascii_nums[j]].ascii[i]);
             }
             printf("\n");
+        }
+        if(argv >= 3) {
+            iter++;
         }
         //flush, because buffered and sleep
         fflush(stdout);
