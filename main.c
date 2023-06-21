@@ -130,6 +130,7 @@ int main (int argv, char** argc) {
     char *str = calloc(9,sizeof(char));
     while(iter <= limit) {
         if(!running) {
+            free(time_ptr);
             free(str);
             exit(0);
         }
