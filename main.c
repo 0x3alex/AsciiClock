@@ -3,20 +3,38 @@
 #include <time.h>
 #include <stdlib.h>
 #include "include/ascii_numbers.h"
-
+#define MAX_ROUNDS 10
 #ifdef _WIN32
 #define CLEAR "cls"
 #include <windows.h>
 #else
 #define CLEAR "clear"
 #include <unistd.h>
+#include <pthread.h>
 #endif
 
+int running = 1;
+int paused = 0;
 typedef struct s_stopWatch {
     int h;
     int m;
     int s;
 } stopWatch;
+
+typedef struct s_stopWatchRounds {
+    int currentLength;
+    stopWatch rounds[MAX_ROUNDS];
+}stopWatchRounds;
+
+stopWatch watch = {
+        .h = 0,
+        .m = 0,
+        .s = 0
+};
+
+stopWatchRounds rounds;
+
+
 
 char *get_time(char *raw_time) {
     char *t_str;
@@ -30,19 +48,19 @@ char *get_time(char *raw_time) {
     return NULL;
 }
 
-void updateStopWatch(stopWatch *watch) {
-    watch->s++;
-    if(watch->s >= 60) {
-        watch->s -= 60;
-        watch->m++;
+void updateStopWatch() {
+    watch.s++;
+    if(watch.s >= 60) {
+        watch.s -= 60;
+        watch.m++;
     }
-    if(watch->m >= 60) {
-        watch->m -= 60;
-        watch->h++;
+    if(watch.m >= 60) {
+        watch.m -= 60;
+        watch.h++;
     }
 }
 
-void stopWatchToString(char *str,stopWatch *watch) {
+void stopWatchToString(char *str, stopWatch *watch) {
     char h[3];
     char m[3];
     char s[3];
@@ -52,10 +70,43 @@ void stopWatchToString(char *str,stopWatch *watch) {
     sprintf(str,"%s:%s:%s",h,m,s);
 }
 
+
+
+#ifndef _WIN32
+void *worker() {
+    while (running) {
+        int c = getchar();
+        switch(c) {
+            case 'q':
+                running = 0;
+                break;
+            case 'p':
+                paused = 1;
+                break;
+            case 'r':
+                if(rounds.currentLength < MAX_ROUNDS) {
+                    rounds.rounds[rounds.currentLength].s = watch.s;
+                    rounds.rounds[rounds.currentLength].m = watch.m;
+                    rounds.rounds[rounds.currentLength++].h = watch.h;
+                }
+                break;
+            case 'c':
+                paused = 0;
+                break;
+        }
+
+    }
+    return NULL;
+}
+#endif
+
 int main (int argv, char** argc) {
     if(argv == 2 && strncmp(argc[1],"h",strlen(argc[1])) == 0) {
-        printf("Syntax: Asciiclock <mode> <duration>\n");
+        printf("Syntax: AsciiClock <mode> <duration>\n");
         printf("Modes:\nNone - Clock\n1 - Stopwatch\n");
+#ifndef _WIN32
+        printf("Controls:\nStopwatch (Linux only)\np - pause\nc- continue\n\n");
+#endif
         printf("When choosing mode 1 the second paramter <duration> can be used to set a limit\n");
         printf("Example usage for the stopwatch: Asciiclock 1 10 - This will display a stopwatch, which is counting to 10\n");
         return 0;
@@ -66,36 +117,46 @@ int main (int argv, char** argc) {
     if(argv >= 3) {
         limit = strtol(argc[2],&overflow,10);
     }
-    //int limit = argv == 3 ? atoi(argc[2]) : 0;
-    stopWatch watch = {
-            .h = 0,
-            .m = 0,
-            .s = 0
-    };
+
     time_t rawtime;
     struct tm * timeinfo;
     system(CLEAR);
+#ifndef _WIN32
+    pthread_t th1;
+    pthread_create(&th1, NULL, worker, "");
+    pthread_detach(th1);
+#endif
+    char *time_ptr = calloc(9,sizeof(char));
+    char *str = calloc(9,sizeof(char));
     while(iter <= limit) {
+        if(!running) {
+            free(str);
+            if(argv > 1) free(time_ptr);
+            exit(0);
+        }
+        unsigned long start = time(NULL);
         int idx = 0;
         int needed_ascii_nums[8];
         time ( &rawtime );
         timeinfo = localtime ( &rawtime );
-        char *time = argv <= 1 ? "" : calloc(9,sizeof(char));
+
         if(mode == 1) {
-            updateStopWatch(&watch);
-            stopWatchToString(time,&watch);
+            if(!paused) {
+                updateStopWatch();
+                stopWatchToString(time_ptr, &watch);
+            }
         }else{
-            time = get_time(asctime(timeinfo));
+            time_ptr = get_time(asctime(timeinfo));
         }
 
         //get the indices of the ascii numbers
-        while (*time) {
+        while (*time_ptr) {
             for(int i = 0; i < ASCII_NUMS_COUNT; ++i) {
-                if(ascii_nums[i].number == *time) {
+                if(ascii_nums[i].number == *time_ptr) {
                     needed_ascii_nums[idx++] = i;
                 }
             }
-            time++;
+            time_ptr++;
         }
 
         //render line by line
@@ -108,14 +169,20 @@ int main (int argv, char** argc) {
         if(argv >= 3) {
             iter++;
         }
+        for(int i = 0; i < rounds.currentLength; ++i) {
+            stopWatchToString(str, &rounds.rounds[i]);
+            printf("Round %d: %s\n",i+1,str);
+        }
         //flush, because buffered and sleep
         fflush(stdout);
 #ifdef _WIN32
-        Sleep(1000)
+        Sleep(1000 - (time(NULL) - start))
 #else
-        sleep(1);
+        sleep(1 - (time(NULL) - start));
 #endif
         system(CLEAR);
+        stopWatch_pause:
+        printf("");
     }
     return 0;
 }
