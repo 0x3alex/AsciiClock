@@ -91,6 +91,8 @@ void *worker() {
             case 'c':
                 paused = 0;
                 break;
+            default:
+                continue;
         }
 
     }
