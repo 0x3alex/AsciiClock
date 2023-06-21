@@ -34,8 +34,6 @@ stopWatch watch = {
 
 stopWatchRounds rounds;
 
-
-
 char *get_time(char *raw_time) {
     char *t_str;
     t_str = strtok(raw_time, " ");
@@ -60,13 +58,13 @@ void updateStopWatch() {
     }
 }
 
-void stopWatchToString(char *str, stopWatch *watch) {
+void stopWatchToString(char *str, stopWatch *w) {
     char h[3];
     char m[3];
     char s[3];
-    sprintf(h,watch->h < 10 ?"0%d" : "%d",watch->h);
-    sprintf(m,watch->m < 10 ?"0%d" : "%d",watch->m);
-    sprintf(s,watch->s < 10 ?"0%d" : "%d",watch->s);
+    sprintf(h,w->h < 10 ?"0%d" : "%d",w->h);
+    sprintf(m,w->m < 10 ?"0%d" : "%d",w->m);
+    sprintf(s,w->s < 10 ?"0%d" : "%d",w->s);
     sprintf(str,"%s:%s:%s",h,m,s);
 }
 
@@ -126,12 +124,11 @@ int main (int argv, char** argc) {
     pthread_create(&th1, NULL, worker, "");
     pthread_detach(th1);
 #endif
-    char *time_ptr = calloc(9,sizeof(char));
+    char *time_ptr = argv == 1 ? NULL: calloc(9,sizeof(char));
     char *str = calloc(9,sizeof(char));
     while(iter <= limit) {
         if(!running) {
             free(str);
-            if(argv > 1) free(time_ptr);
             exit(0);
         }
         unsigned long start = time(NULL);
@@ -181,8 +178,6 @@ int main (int argv, char** argc) {
         sleep(1 - (time(NULL) - start));
 #endif
         system(CLEAR);
-        stopWatch_pause:
-        printf("");
     }
     return 0;
 }
