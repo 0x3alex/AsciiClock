@@ -125,12 +125,11 @@ int main (int argv, char** argc) {
     pthread_t th1;
     pthread_create(&th1, NULL, worker, "");
     pthread_detach(th1);
+    char *str = calloc(9,sizeof(char));
 #endif
     char *time_ptr = argv == 1 ? NULL: calloc(9,sizeof(char));
-    char *str = calloc(9,sizeof(char));
     while(iter <= limit) {
         if(!running) {
-            free(time_ptr);
             free(str);
             exit(0);
         }
