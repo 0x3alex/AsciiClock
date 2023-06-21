@@ -105,7 +105,7 @@ int main (int argv, char** argc) {
         printf("Syntax: AsciiClock <mode> <duration>\n");
         printf("Modes:\nNone - Clock\n1 - Stopwatch\n");
 #ifndef _WIN32
-        printf("Controls:\nStopwatch (Linux only)\np - pause\nc- continue\n\n");
+        printf("Controls:\nStopwatch (Linux only)\np - pause\nc - continue\nr - stop round\n\n");
 #endif
         printf("When choosing mode 1 the second paramter <duration> can be used to set a limit\n");
         printf("Example usage for the stopwatch: Asciiclock 1 10 - This will display a stopwatch, which is counting to 10\n");
