@@ -4,14 +4,9 @@
 #include <stdlib.h>
 #include "include/ascii_numbers.h"
 #define MAX_ROUNDS 10
-#ifdef _WIN32
-#define CLEAR "cls"
-#include <windows.h>
-#else
 #define CLEAR "clear"
 #include <unistd.h>
 #include <pthread.h>
-#endif
 
 int running = 1;
 int paused = 0;
@@ -68,9 +63,6 @@ void stopWatchToString(char *str, stopWatch *w) {
     sprintf(str,"%s:%s:%s",h,m,s);
 }
 
-
-
-#ifndef _WIN32
 void *worker() {
     while (running) {
         int c = getchar();
@@ -98,15 +90,12 @@ void *worker() {
     }
     return NULL;
 }
-#endif
 
 int main (int argv, char** argc) {
     if(argv == 2 && strncmp(argc[1],"h",strlen(argc[1])) == 0) {
         printf("Syntax: AsciiClock <mode> <duration>\n");
         printf("Modes:\nNone - Clock\n1 - Stopwatch\n");
-#ifndef _WIN32
         printf("Controls:\nStopwatch (Linux only)\np - pause\nc - continue\nr - stop round\n\n");
-#endif
         printf("When choosing mode 1 the second paramter <duration> can be used to set a limit\n");
         printf("Example usage for the stopwatch: Asciiclock 1 10 - This will display a stopwatch, which is counting to 10\n");
         return 0;
@@ -121,13 +110,13 @@ int main (int argv, char** argc) {
     time_t rawtime;
     struct tm * timeinfo;
     system(CLEAR);
-#ifndef _WIN32
+
     pthread_t th1;
     pthread_create(&th1, NULL, worker, "");
     pthread_detach(th1);
-    char *str = calloc(9,sizeof(char));
-#endif
+
     char *time_ptr = argv == 1 ? NULL: calloc(9,sizeof(char));
+    char *str = calloc(9,sizeof(char));
     while(iter <= limit) {
         if(!running) {
             free(str);
@@ -174,11 +163,7 @@ int main (int argv, char** argc) {
         }
         //flush, because buffered and sleep
         fflush(stdout);
-#ifdef _WIN32
-        Sleep(1000 - (time(NULL) - start))
-#else
         sleep(1 - (time(NULL) - start));
-#endif
         system(CLEAR);
     }
     return 0;
